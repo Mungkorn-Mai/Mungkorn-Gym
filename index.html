@@ -40,7 +40,10 @@ gold;}
 <input type="text" id="name" placeholder="Full Name">
 <input type="text" id="phone" placeholder="Phone Number">
 <input type="text" id="address" placeholder="Address">
-<input type="number" id="age" placeholder="Age">
+<label style="color:
+gold">Date of Birth</label>
+<input type="date" id="dob" onchange="calcAge()">
+<input type="number" id="age" placeholder="Age (auto calculated)" readonly style="opacity:0.7">
 <input type="text" id="emergency" placeholder="Emergency Contact">
 <select id="membership">
 <option>Casual</option>
