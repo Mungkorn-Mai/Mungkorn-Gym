@@ -63,7 +63,8 @@ function displayMembers(){let groups={};members.forEach(m=>{let g=getGroup(m.age
 🏠 ${m.address}
 🎂 Age: ${m.age}
 🚨 ${m.emergency}
-🏷️ ${m.membership}</div>`;});});document.getElementById('memberList').innerHTML=html;}
+🏷️ ${m.membership}
+<button class="btn" style="background:#550000;margin-top:8px" onclick="deleteMember(${i})">🗑️ Delete</button></div>`;</div>`;});});document.getElementById('memberList').innerHTML=html;}
 displayMembers();
 </script>
 </body></html>
