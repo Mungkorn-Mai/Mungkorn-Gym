@@ -7,20 +7,60 @@
 <style>
 body{background:
 #00008B;color:
-gold;font-family:Arial;text-align:center;padding:20px;}
-h1{color:
-gold;font-size:2.5em;}
+gold;font-family:Arial;padding:20px;}
+h1{text-align:center;}
 .btn{background:
 #8B0000;color:
-white;padding:15px;width:80%;border:none;border-radius:8px;font-size:1.1em;display:block;margin:10px auto;}
-</style>
-</head>
+white;padding:12px;width:100%;border:none;border-radius:8px;font-size:1.1em;margin:8px 0;}
+input,select{width:100%;padding:10px;margin:8px 0;border:2px solid 
+black;border-radius:6px;background:
+#000033;color:
+white;font-size:1em;}
+.member-card{background:
+#000033;border:2px solid 
+#8B0000;border-radius:8px;padding:15px;margin:10px 0;}
+.group-header{color:
+gold;font-size:1.2em;margin-top:20px;border-bottom:1px solid 
+gold;}
+.page{display:none;}
+.active{display:block;}
+</style></head>
 <body>
+<div id="home" class="page active">
 <h1>🐉 Mungkorn Mai</h1>
-<h2>Gym Management System</h2>
-<button class="btn" onclick="location.href='members.html'">👥 Members</button>
+<h2 style="text-align:center">Gym Management System</h2>
+<button class="btn" onclick="show('members')">👥 Members</button>
 <button class="btn">✅ Check In</button>
 <button class="btn">📅 Classes</button>
 <button class="btn">📊 Dashboard</button>
-</body>
-</html>
+</div>
+<div id="members" class="page">
+<h1>👥 Members</h1>
+<button class="btn" onclick="show('home')">🏠 Home</button>
+<input type="text" id="name" placeholder="Full Name">
+<input type="text" id="phone" placeholder="Phone Number">
+<input type="text" id="address" placeholder="Address">
+<input type="number" id="age" placeholder="Age">
+<input type="text" id="emergency" placeholder="Emergency Contact">
+<select id="membership">
+<option>Casual</option>
+<option>Monthly</option>
+<option>Term</option>
+</select>
+<button class="btn" onclick="addMember()">➕ Add Member</button>
+<div id="memberList"></div>
+</div>
+<script>
+function show(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+let members=JSON.parse(localStorage.getItem('members')||'[]');
+function getGroup(age){if(age>=5&&age<=8)return'5-8yrs (4:00-4:30pm)';if(age>=9&&age<=12)return'9-12yrs (4:40-5:25pm)';if(age>=13&&age<=16)return'13-16yrs (5:30-6:30pm)';return'17yrs+ (6:30-7:45pm)';}
+function addMember(){let m={name:document.getElementById('name').value,phone:document.getElementById('phone').value,address:document.getElementById('address').value,age:parseInt(document.getElementById('age').value),emergency:document.getElementById('emergency').value,membership:document.getElementById('membership').value};members.push(m);localStorage.setItem('members',JSON.stringify(members));displayMembers();}
+function displayMembers(){let groups={};members.forEach(m=>{let g=getGroup(m.age);if(!groups[g])groups[g]=[];groups[g].push(m);});let html='';Object.keys(groups).forEach(g=>{html+=`<div class="group-header">👥 ${g}</div>`;groups[g].forEach(m=>{html+=`<div class="member-card"><b>${m.name}</b>
+📞 ${m.phone}
+🏠 ${m.address}
+🎂 Age: ${m.age}
+🚨 ${m.emergency}
+🏷️ ${m.membership}</div>`;});});document.getElementById('memberList').innerHTML=html;}
+displayMembers();
+</script>
+</body></html>
