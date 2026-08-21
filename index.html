@@ -7,20 +7,241 @@
 <style>
 body{background:
 #00008B;color:
-gold;font-family:Arial;text-align:center;padding:20px;}
-h1{color:
-gold;font-size:2.5em;}
+gold;font-family:Arial;padding:20px;}
+h1{text-align:center;}
 .btn{background:
 #8B0000;color:
-white;padding:15px;width:80%;border:none;border-radius:8px;font-size:1.1em;display:block;margin:10px auto;}
+white;padding:12px;width:100%;border:2px solid 
+black;border-radius:8px;font-size:1.1em;margin:8px 0;cursor:pointer;}
+input,select{width:100%;padding:10px;margin:8px 0;border:2px solid 
+black;border-radius:6px;background:
+#000033;color:
+white;font-size:1em;}
+.member-card{background:
+#000033;border:2px solid 
+#8B0000;border-radius:8px;padding:15px;margin:10px 0;}
+.group-header{color:
+gold;font-size:1.2em;margin-top:20px;border-bottom:1px solid 
+gold;padding-bottom:4px;}
+.page{display:none;}
+.active{display:block;}
+label{color:
+gold;font-size:0.9em;}
+.checkin-card{background:
+#000033;border:2px solid 
+green;border-radius:8px;padding:12px;margin:8px 0;}
+.class-card{background:
+#000033;border:2px solid 
+#8B0000;border-radius:8px;padding:12px;margin:8px 0;}
+.stat-box{background:
+#000033;border:2px solid 
+gold;border-radius:8px;padding:15px;margin:8px 0;text-align:center;font-size:1.2em;}
 </style>
 </head>
 <body>
+
+<!-- HOME -->
+<div id="home" class="page active">
 <h1>🐉 Mungkorn Mai</h1>
-<h2>Gym Management System</h2>
-<button class="btn" onclick="location.href='members.html'">👥 Members</button>
-<button class="btn">✅ Check In</button>
-<button class="btn">📅 Classes</button>
-<button class="btn">📊 Dashboard</button>
+<h2 style="text-align:center">Gym Management System</h2>
+<button class="btn" onclick="show('members')">👥 Members</button>
+<button class="btn" onclick="show('checkin')">✅ Check In</button>
+<button class="btn" onclick="show('classes')">📅 Classes</button>
+<button class="btn" onclick="show('dashboard')">📊 Dashboard</button>
+</div>
+
+<!-- MEMBERS -->
+<div id="members" class="page">
+<h1>👥 Members</h1>
+<button class="btn" onclick="show('home')">🏠 Home</button>
+<label>Full Name</label>
+<input type="text" id="name" placeholder="Full Name">
+<label>Phone Number</label>
+<input type="text" id="phone" placeholder="Phone Number">
+<label>Address</label>
+<input type="text" id="address" placeholder="Address">
+<label>Date of Birth</label>
+<input type="date" id="dob" onchange="calcAge()">
+<input type="number" id="age" placeholder="Age (auto calculated)" readonly style="opacity:0.7">
+<label>Emergency Contact</label>
+<input type="text" id="emergency" placeholder="Emergency Contact">
+<label>Membership Type</label>
+<select id="membership">
+<option>Casual</option>
+<option>Monthly</option>
+<option>Term</option>
+</select>
+<button class="btn" onclick="addMember()">➕ Add Member</button>
+<input type="text" id="search" placeholder="🔍 Search Member" oninput="displayMembers()">
+<div id="memberList"></div>
+</div>
+
+<!-- CHECK IN -->
+<div id="checkin" class="page">
+<h1>✅ Check In</h1>
+<button class="btn" onclick="show('home')">🏠 Home</button>
+<input type="text" id="checkinSearch" placeholder="🔍 Search Member to Check In" oninput="searchCheckin()">
+<div id="checkinResults"></div>
+<h2>Today's Attendance</h2>
+<div id="attendanceList"></div>
+</div>
+
+<!-- CLASSES -->
+<div id="classes" class="page">
+<h1>📅 Classes</h1>
+<button class="btn" onclick="show('home')">🏠 Home</button>
+<div class="class-card"><b>🥊 5-8 Years</b>
+Monday, Wednesday, Friday
+4:00pm — 4:30pm
+Granville Civic Centre</div>
+<div class="class-card"><b>🥊 9-12 Years</b>
+Monday, Wednesday, Friday
+4:40pm — 5:25pm
+Granville Civic Centre</div>
+<div class="class-card"><b>🥊 13-16 Years</b>
+Monday, Wednesday, Friday
+5:30pm — 6:30pm
+Granville Civic Centre</div>
+<div class="class-card"><b>🥊 17 Years and Over</b>
+Monday, Wednesday, Friday
+6:30pm — 7:45pm
+Granville Civic Centre</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="page">
+<h1>📊 Dashboard</h1>
+<button class="btn" onclick="show('home')">🏠 Home</button>
+<div class="stat-box">👥 Total Members: <span id="totalMembers">0</span></div>
+<div class="stat-box">✅ Check Ins Today: <span id="totalCheckins">0</span></div>
+<div class="stat-box">🏷️ Casual Members: <span id="casualCount">0</span></div>
+<div class="stat-box">📅 Monthly Members: <span id="monthlyCount">0</span></div>
+<div class="stat-box">📋 Term Members: <span id="termCount">0</span></div>
+</div>
+
+<script>
+let members=JSON.parse(localStorage.getItem('members')||'[]');
+let checkins=JSON.parse(localStorage.getItem('checkins')||'[]');
+
+function show(id){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+if(id==='dashboard')updateDashboard();
+if(id==='checkin')displayAttendance();
+}
+
+function calcAge(){
+let dob=new Date(document.getElementById('dob').value);
+let today=new Date();
+let age=today.getFullYear()-dob.getFullYear();
+let m=today.getMonth()-dob.getMonth();
+if(m<0||(m===0&&today.getDate()<dob.getDate()))age--;
+document.getElementById('age').value=age;
+}
+
+function getGroup(age){
+if(age>=5&&age<=8)return'5-8yrs (4:00-4:30pm)';
+if(age>=9&&age<=12)return'9-12yrs (4:40-5:25pm)';
+if(age>=13&&age<=16)return'13-16yrs (5:30-6:30pm)';
+return'17yrs+ (6:30-7:45pm)';
+}
+
+function addMember(){
+let m={
+name:document.getElementById('name').value,
+phone:document.getElementById('phone').value,
+address:document.getElementById('address').value,
+dob:document.getElementById('dob').value,
+age:parseInt(document.getElementById('age').value),
+emergency:document.getElementById('emergency').value,
+membership:document.getElementById('membership').value
+};
+if(!m.name||!m.age){alert('Please enter at least a name and date of birth');return;}
+members.push(m);
+localStorage.setItem('members',JSON.stringify(members));
+document.getElementById('name').value='';
+document.getElementById('phone').value='';
+document.getElementById('address').value='';
+document.getElementById('dob').value='';
+document.getElementById('age').value='';
+document.getElementById('emergency').value='';
+displayMembers();
+}
+
+function deleteMember(i){
+if(confirm('Delete this member?')){
+members.splice(i,1);
+localStorage.setItem('members',JSON.stringify(members));
+displayMembers();
+}}
+
+function displayMembers(){
+let search=document.getElementById('search').value.toLowerCase();
+let filtered=members.filter(m=>m.name.toLowerCase().includes(search));
+let groups={};
+filtered.forEach((m,i)=>{
+let g=getGroup(m.age);
+if(!groups[g])groups[g]=[];
+groups[g].push({m,i});
+});
+let html='';
+Object.keys(groups).forEach(g=>{
+html+=`<div class="group-header">👥 ${g}</div>`;
+groups[g].forEach(({m,i})=>{
+html+=`<div class="member-card"><b>${m.name}</b>
+📞 ${m.phone}
+🏠 ${m.address}
+🎂 DOB: ${m.dob} | Age: ${m.age}
+🚨 ${m.emergency}
+🏷️ ${m.membership}
+
+<button class="btn" style="background:#550000;margin-top:8px" onclick="deleteMember(${i})">🗑️ Delete</button></div>`;
+});
+});
+document.getElementById('memberList').innerHTML=html||'<p>No members found</p>';
+}
+
+function searchCheckin(){
+let search=document.getElementById('checkinSearch').value.toLowerCase();
+if(!search){document.getElementById('checkinResults').innerHTML='';return;}
+let filtered=members.filter(m=>m.name.toLowerCase().includes(search));
+let html=filtered.map((m,i)=>`<div class="member-card"><b>${m.name}</b> — ${getGroup(m.age)}
+
+<button class="btn" style="background:green" onclick="checkInMember(${members.indexOf(m)})">✅ Check In</button></div>`).join('');
+document.getElementById('checkinResults').innerHTML=html||'<p>No members found</p>';
+}
+
+function checkInMember(i){
+let now=new Date();
+let entry={name:members[i].name,time:now.toLocaleTimeString(),date:now.toLocaleDateString(),group:getGroup(members[i].age)};
+checkins.push(entry);
+localStorage.setItem('checkins',JSON.stringify(checkins));
+document.getElementById('checkinSearch').value='';
+document.getElementById('checkinResults').innerHTML='';
+displayAttendance();
+alert(members[i].name+' checked in successfully!');
+}
+
+function displayAttendance(){
+let today=new Date().toLocaleDateString();
+let todayCheckins=checkins.filter(c=>c.date===today);
+let html=todayCheckins.map(c=>`<div class="checkin-card"><b>${c.name}</b>
+🕐 ${c.time}
+👥 ${c.group}</div>`).join('');
+document.getElementById('attendanceList').innerHTML=html||'<p>No check ins today</p>';
+}
+
+function updateDashboard(){
+let today=new Date().toLocaleDateString();
+let todayCheckins=checkins.filter(c=>c.date===today);
+document.getElementById('totalMembers').textContent=members.length;
+document.getElementById('totalCheckins').textContent=todayCheckins.length;
+document.getElementById('casualCount').textContent=members.filter(m=>m.membership==='Casual').length;
+document.getElementById('monthlyCount').textContent=members.filter(m=>m.membership==='Monthly').length;
+document.getElementById('termCount').textContent=members.filter(m=>m.membership==='Term').length;
+}
+
+displayMembers();
+</script>
 </body>
 </html>
